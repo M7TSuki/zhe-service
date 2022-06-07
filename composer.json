@@ -1,5 +1,5 @@
 {
-    "name": "anchu_dt/zhe_service",
+    "name": "anchu-dt/zhe-service",
     "description": "app service",
     "type": "library",
     "require": {
