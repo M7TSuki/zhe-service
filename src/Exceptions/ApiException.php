@@ -1,6 +1,6 @@
 <?php
 
-namespace zheService\Exceptions;
+namespace ZheService\Exceptions;
 
 use RuntimeException;
 use Throwable;

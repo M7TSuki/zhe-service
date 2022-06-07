@@ -1,8 +1,8 @@
 <?php
 
-namespace zheService\ZheLb;
+namespace ZheService\ZheLb;
 
-use zheService\Exceptions\ApiException;
+use ZheService\Exceptions\ApiException;
 
 class UserService
 {
@@ -22,7 +22,7 @@ class UserService
         $this->zlb_personal_user_url = $config['ZLB_PERSONAL_USER_URL'];
         $this->zlb_legal_user_url = $config['ZLB_LEGAL_USER_URL'];
     }
-    
+
     /**
      * 个人登录 票据认证
      *

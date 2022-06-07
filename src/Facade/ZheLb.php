@@ -1,6 +1,6 @@
 <?php
 
-namespace zheService\Facade;
+namespace ZheService\Facade;
 
 use Illuminate\Support\Facades\Facade;
 

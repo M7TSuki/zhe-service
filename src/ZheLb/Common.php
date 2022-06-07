@@ -1,6 +1,6 @@
 <?php
 
-namespace zheService\ZheLb;
+namespace ZheService\ZheLb;
 
 use GuzzleHttp\Client;
 
