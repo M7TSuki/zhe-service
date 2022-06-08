@@ -28,7 +28,7 @@ class Common
         if ($type) {
             $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         }
-
+        
         return $headers;
     }
 
@@ -49,26 +49,6 @@ class Common
         $hash = hash_hmac("sha256", $signing_string, env('ZLB_SECRET_KEY'), true);
 
         return base64_encode($hash);
-    }
-
-    /**
-     * 请求
-     *
-     * @param $params
-     * @return mixed
-     */
-    public function curl($url, $headers, $params)
-    {
-        $client = new Client([
-            'verify' => false,
-            'headers' => $headers,
-        ]);
-
-        $response = $client->request('POST', $url, $params);
-
-        if ($response->getStatusCode() == 200) {
-            return json_decode($response->getBody()->getContents(), true);
-        }
     }
 
     /**
@@ -96,5 +76,25 @@ class Common
     private function sign($time)
     {
         return strtolower(md5(env('ZLB_ACCESS_KEY') . env('ZLB_SECRET_KEY') . $time));
+    }
+
+    /**
+     * 请求
+     *
+     * @param $params
+     * @return mixed
+     */
+    public function curl($url, $headers, $params)
+    {
+        $client = new Client([
+            'verify' => false,
+            'headers' => $headers,
+        ]);
+
+        $response = $client->request('POST', $url, $params);
+
+        if ($response->getStatusCode() == 200) {
+            return json_decode($response->getBody()->getContents(), true);
+        }
     }
 }

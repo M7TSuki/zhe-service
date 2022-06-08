@@ -3,8 +3,9 @@
 namespace ZheService\ZheLb;
 
 use ZheService\Exceptions\ApiException;
+use ZheService\Interfaces\ZheLb;
 
-class UserService
+class Services implements ZheLb
 {
     private $zlbCommon;
     private $zlb_personal_ticket_url;
@@ -14,8 +15,9 @@ class UserService
     public function __construct()
     {
         $this->zlbCommon = new Common();
-        if (!$env = env('ZLB_ENV') || env('ZLB_ACCESS_KEY') || env('ZLB_SECRET_KEY')) {
-            throw new ApiException(['msg' => '请配置开发环境参数', 'code' => 1]);
+        $env = env('ZLB_ENV');
+        if (!$env || !env('ZLB_ACCESS_KEY') || !env('ZLB_SECRET_KEY')) {
+            throw new ApiException(['msg' => '请配置开发环境参数.', 'code' => 1]);
         }
         $config = $this->apiConfig($env);
         $this->zlb_personal_ticket_url = $config['ZLB_PERSONAL_TICKET_URL'];
@@ -33,10 +35,6 @@ class UserService
      */
     public function personalTicket(String $st)
     {
-        if (empty($st)) {
-            throw new ApiException(['msg' => '缺少st参数', 'code' => 1]);
-        }
-
         $headers = $this->zlbCommon->getHeaders($this->zlb_personal_ticket_url, 'person');
         list($servicecode, $time, $sign) = $this->zlbCommon->getHttpParams();
 
@@ -62,10 +60,6 @@ class UserService
      */
     public function personalInfo(String $token)
     {
-        if (empty($token)) {
-            throw new ApiException(['msg' => '缺少token参数', 'code' => 1]);
-        }
-
         $headers = $this->zlbCommon->getHeaders($this->zlb_personal_user_url, 'person');
         list($servicecode, $time, $sign) = $this->zlbCommon->getHttpParams();
 
@@ -97,10 +91,6 @@ class UserService
      */
     public function legalInfo(String $ssotoken)
     {
-        if (!isset($ssotoken)) {
-            throw new APIException(['msg' => '缺少ssotoken参数.', 'code' => 1]);
-        }
-
         $headers = $this->zlbCommon->getHeaders($this->zlb_legal_user_url);
         $resParams = $this->zlbCommon->curl($this->zlb_legal_user_url, $headers, [
             'json' => ['token' => $ssotoken],
@@ -112,7 +102,7 @@ class UserService
 
         return $resParams;
     }
-
+    
     private function apiConfig($env)
     {
         $config = [
