@@ -82,7 +82,7 @@ class Services implements ZheNm
         if ($result['state'] != 200) {
             throw new ApiException(['msg' => $result['msg'], 'code' => 1]);
         }
-        return result;
+        return $result;
     }
 
     /**
