@@ -7,6 +7,7 @@ use ZheService\Interfaces\ZheLb;
 use ZheService\Interfaces\ZheNm;
 use ZheService\ZheLb\Image;
 use ZheService\ZheLb\Services as zlbService;
+use ZheService\ZheNm\Services as znmService;
 
 class ZheProxy implements ZheLb, ZheNm, ImageInterface
 {
@@ -38,18 +39,10 @@ class ZheProxy implements ZheLb, ZheNm, ImageInterface
         return self::$zlbInstance->{__FUNCTION__}($ssotoken);
     }
 
-    public function imageInfo(String $osspath)
-    {
-        if (!isset(self::$imageInstance)) {
-            self::$imageInstance = new Image();
-        }
-        return self::$zlbInstance->{__FUNCTION__}($osspath);
-    }
-
     public function applyCode(array $params)
     {
         if (!isset(self::$znmInstance)) {
-            self::$znmInstance = new Image();
+            self::$znmInstance = new znmService();
         }
         return self::$znmInstance->{__FUNCTION__}($params);
     }
@@ -57,7 +50,7 @@ class ZheProxy implements ZheLb, ZheNm, ImageInterface
     public function updateCode(array $params)
     {
         if (!isset(self::$znmInstance)) {
-            self::$znmInstance = new Image();
+            self::$znmInstance = new znmService();
         }
         return self::$znmInstance->{__FUNCTION__}($params);
     }
@@ -65,7 +58,7 @@ class ZheProxy implements ZheLb, ZheNm, ImageInterface
     public function codeInfo(String $znm_uid)
     {
         if (!isset(self::$znmInstance)) {
-            self::$znmInstance = new Image();
+            self::$znmInstance = new znmService();
         }
         return self::$znmInstance->{__FUNCTION__}($znm_uid);
     }
@@ -73,8 +66,16 @@ class ZheProxy implements ZheLb, ZheNm, ImageInterface
     public function codeDisplay(array $params)
     {
         if (!isset(self::$znmInstance)) {
-            self::$znmInstance = new Image();
+            self::$znmInstance = new znmService();
         }
         return self::$znmInstance->{__FUNCTION__}($params);
+    }
+
+    public function imageInfo(String $osspath)
+    {
+        if (!isset(self::$imageInstance)) {
+            self::$imageInstance = new Image();
+        }
+        return self::$zlbInstance->{__FUNCTION__}($osspath);
     }
 }

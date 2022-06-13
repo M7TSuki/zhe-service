@@ -27,7 +27,7 @@ class Client
             throw new ApiException(['msg' => '请配置开发环境参数.', 'code' => 1]);
         }
         // TODO 确认正确地址
-        $this->znmUrl = $env == 'live' ? 'https://znm.zjagri.cn/api/' : 'https://znm.zjagri.cn/api/';
+        $this->znmUrl = $env == 'live' ? 'https://znm.zjagri.cn/api/' : 'http://znm.kf315.net/api/';
     }
 
     // 获取客户端id
@@ -51,10 +51,11 @@ class Client
         $queryKey = $method === 'GET' ? 'query' : 'json';
         $url = $this->znmUrl . $api;
         $curlParams = [$queryKey => $httpParams];
+        
         if ($needToken) {
-            $curlParams['headers'] = (new Token())->token();
+            $curlParams['headers'] = ['Authorization' => (new Token())->token()];
         }
-
+        
         $response = $client->request($method, $url, $curlParams);
         if ($response->getStatusCode() == 200) {
             $contents = $response->getBody()->getContents();

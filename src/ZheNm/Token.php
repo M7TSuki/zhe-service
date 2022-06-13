@@ -34,7 +34,7 @@ class Token
             'clientSecret' => $client->getClientSecret(),
             'grantType' => 'client_credentials',
         ], true, false);
-
+        
         if ($response['state'] != 200) {
             throw new ApiException(['msg' => '系统异常.', 'code' => 1]);
         }
