@@ -42,7 +42,8 @@ class Common
      * @date 2022-05-31
      */
     private function getSignature($HTTP_URI, $gmDate)
-    {
+    {   
+        $HTTP_URI = parse_url($HTTP_URI)['path'];
         $QUERY_STREAM = '';
         $signing_string = "POST" . "\n" . $HTTP_URI . "\n" . $QUERY_STREAM . "\n" . env('ZLB_ACCESS_KEY') . "\n" . $gmDate . "\n";
 
