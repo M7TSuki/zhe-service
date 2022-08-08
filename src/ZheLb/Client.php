@@ -2,33 +2,31 @@
 
 namespace ZheService\ZheLb;
 
-use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 
-class Common
+class Client
 {
     /**
      * 生成请求头
      *
      * @param [type] $HTTP_URI 接口地址
      * @param [type] $type 区分用户
-     * @return void
-     * @author Dunstan
-     * @date 2022-05-31
+     * @return Array
      */
+
     public function getHeaders($HTTP_URI, $type = null)
     {
         $gmDate = gmdate("D, d M Y H:i:s ") . "GMT";
         $headers = [
             'X-BG-HMAC-SIGNATURE' => $this->getSignature($HTTP_URI, $gmDate),
             'X-BG-HMAC-ALGORITHM' => 'hmac-sha256',
-            'X-BG-HMAC-ACCESS-KEY' => env('ZLB_ACCESS_KEY'),
+            'X-BG-HMAC-ACCESS-KEY' => Services::accessKey(),
             'X-BG-DATE-TIME' => $gmDate,
         ];
 
         if ($type) {
             $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         }
-        
         return $headers;
     }
 
@@ -38,16 +36,14 @@ class Common
      * @param [type] $HTTP_URI 接口URI
      * @param [type] $gmDate
      * @return String
-     * @author Dunstan
-     * @date 2022-05-31
      */
     private function getSignature($HTTP_URI, $gmDate)
-    {   
+    {
         $HTTP_URI = parse_url($HTTP_URI)['path'];
         $QUERY_STREAM = '';
-        $signing_string = "POST" . "\n" . $HTTP_URI . "\n" . $QUERY_STREAM . "\n" . env('ZLB_ACCESS_KEY') . "\n" . $gmDate . "\n";
+        $signing_string = "POST" . "\n" . $HTTP_URI . "\n" . $QUERY_STREAM . "\n" . Services::accessKey() . "\n" . $gmDate . "\n";
 
-        $hash = hash_hmac("sha256", $signing_string, env('ZLB_SECRET_KEY'), true);
+        $hash = hash_hmac("sha256", $signing_string, Services::secretKey(), true);
 
         return base64_encode($hash);
     }
@@ -56,15 +52,13 @@ class Common
      * 个人登录 输入参数
      *
      * @return array
-     * @author Dunstan
-     * @date 2022-05-31
      */
     public function getHttpParams()
     {
         $time = $this->getTime();
         $sign = $this->sign($time);
 
-        return [env('ZLB_ACCESS_KEY'), $time, $sign];
+        return [Services::accessKey(), $time, $sign];
     }
 
     // 获取时间
@@ -76,7 +70,7 @@ class Common
     // 浙里办签名
     private function sign($time)
     {
-        return strtolower(md5(env('ZLB_ACCESS_KEY') . env('ZLB_SECRET_KEY') . $time));
+        return strtolower(md5(Services::accessKey() . Services::secretKey() . $time));
     }
 
     /**
@@ -87,7 +81,7 @@ class Common
      */
     public function curl($url, $headers, $params)
     {
-        $client = new Client([
+        $client = new GuzzleClient([
             'verify' => false,
             'headers' => $headers,
         ]);

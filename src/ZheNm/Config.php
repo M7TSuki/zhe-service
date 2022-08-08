@@ -1,12 +1,12 @@
 <?php
 
-namespace ZheService\ZheNm\Consts;
+namespace ZheService\ZheNm;
 
 class Config
-{       
+{
     // 浙农码token redis key
     const ZHE_NM_TOKEN_KEY = 'zhe_nm_token';
-    
+
     // token过期时间
     const ZHE_NM_TOKEN_EXPIRE = '6000';
 
@@ -83,4 +83,21 @@ class Config
     // 浙农码--扫码类型
     const ZNM_SCAN_ENTRY_TYPE_COMMON = 'common';
 
+    // 认证登录
+    const OAUTH_TOKEN_API = '/hydra-znm-api/api/v1/oauth/token';
+
+    //浙农码申请
+    const APPLY_CODE_API = '/hydra-znm-api/api/v3/znm/code-apply';
+
+    //批量获取二维码图片及设置预警赋色
+    const BATCH_GET_QR_CODE_API = '/hydra-znm-api/api/v1/znm/getZnmQrCodeList';
+
+    //更新赋码信息
+    const UPDATE_CODE_API = '/hydra-znm-api/api/v3/update/znm-code-params';
+
+    //扫码通过获取用户信息
+    const GET_USER_BY_CODE_API = '/hydra-znm-api/api/v1/znm/code/info';
+
+    //获取浙里办扫码人信息
+    const GET_LOGIN_USER_API = '/hydra-znm-api/api/v1/znm/zww-user/login-info';
 }

@@ -7,22 +7,33 @@ use ZheService\Interfaces\ZheLb;
 
 class Services implements ZheLb
 {
-    private $zlbCommon;
-    private $zlb_personal_ticket_url;
-    private $zlb_personal_user_url;
-    private $zlb_legal_user_url;
+    private $client;
+    private $personalTicketUrl;
+    private $personalUserUrl;
+    private $legalUserUrl;
+    private $ssoTokenUrl;
+    private $ssoUserUrl;
+
+    private static $accessKey;
+    private static $secretKey;
 
     public function __construct()
     {
-        $this->zlbCommon = new Common();
         $env = env('ZLB_ENV');
         if (!$env || !env('ZLB_ACCESS_KEY') || !env('ZLB_SECRET_KEY')) {
             throw new ApiException(['msg' => '请配置开发环境参数.', 'code' => 1]);
         }
-        $config = $this->apiConfig($env);
-        $this->zlb_personal_ticket_url = $config['ZLB_PERSONAL_TICKET_URL'];
-        $this->zlb_personal_user_url = $config['ZLB_PERSONAL_USER_URL'];
-        $this->zlb_legal_user_url = $config['ZLB_LEGAL_USER_URL'];
+        
+        $config = Config::API_URL[$env];
+        $this->client = new Client();
+        $this->personalTicketUrl = $config['PERSONAL_TICKET_URL'];
+        $this->personalUserUrl = $config['PERSONAL_USER_URL'];
+        $this->legalUserUrl = $config['LEGAL_USER_URL'];
+        $this->ssoTokenUrl = $config['SSO_TOKEN_URL'];
+        $this->ssoUserUrl = $config['SSO_USER_URL'];
+
+        self::$accessKey = env('ZLB_ACCESS_KEY');
+        self::$secretKey = env('ZLB_SECRET_KEY');
     }
 
     /**
@@ -30,15 +41,13 @@ class Services implements ZheLb
      *
      * @param String $st
      * @return array
-     * @author Dunstan
-     * @date 2022-06-01
      */
     public function personalTicket(String $st)
     {
-        $headers = $this->zlbCommon->getHeaders($this->zlb_personal_ticket_url, 'person');
-        list($servicecode, $time, $sign) = $this->zlbCommon->getHttpParams();
+        $headers = $this->client->getHeaders($this->personalTicketUrl, 'person');
+        list($servicecode, $time, $sign) = $this->client->getHttpParams();
 
-        return $this->zlbCommon->curl($this->zlb_personal_ticket_url, $headers, [
+        return $this->client->curl($this->personalTicketUrl, $headers, [
             'form_params' => [
                 'servicecode' => $servicecode,
                 'time' => $time,
@@ -55,15 +64,13 @@ class Services implements ZheLb
      *
      * @param String $token
      * @return array
-     * @author Dunstan
-     * @date 2022-06-01
      */
     public function personalInfo(String $token)
     {
-        $headers = $this->zlbCommon->getHeaders($this->zlb_personal_user_url, 'person');
-        list($servicecode, $time, $sign) = $this->zlbCommon->getHttpParams();
+        $headers = $this->client->getHeaders($this->personalUserUrl, 'person');
+        list($servicecode, $time, $sign) = $this->client->getHttpParams();
 
-        $resParams = $this->zlbCommon->curl($this->zlb_personal_user_url, $headers, [
+        $result = $this->client->curl($this->personalUserUrl, $headers, [
             'form_params' => [
                 'method' => 'getUserInfo',
                 'datatype' => 'json',
@@ -74,11 +81,11 @@ class Services implements ZheLb
             ],
         ]);
 
-        if ($resParams['result']) {
-            throw new APIException(['msg' => $resParams['errmsg'], 'code' => $resParams['result']]);
+        if ($result['result']) {
+            throw new APIException(['msg' => $result['errmsg'], 'code' => $result['result']]);
         }
 
-        return $resParams;
+        return $result;
     }
 
     /**
@@ -86,39 +93,96 @@ class Services implements ZheLb
      *
      * @param String $ssoToken
      * @return array
-     * @author Dunstan
-     * @date 2022-06-01
      */
-    public function legalInfo(String $ssotoken)
+    public function legalInfo(String $ssoToken)
     {
-        $headers = $this->zlbCommon->getHeaders($this->zlb_legal_user_url);
-        $resParams = $this->zlbCommon->curl($this->zlb_legal_user_url, $headers, [
-            'json' => ['token' => $ssotoken],
+        $headers = $this->client->getHeaders($this->legalUserUrl);
+        $result = $this->client->curl($this->legalUserUrl, $headers, [
+            'json' => ['token' => $ssoToken],
         ]);
 
-        if (!$resParams['success']) {
-            throw new ApiException(['code' => $resParams['errCode'], 'msg' => $resParams['msg']]);
+        if (!$result['success']) {
+            throw new ApiException(['code' => $result['errCode'], 'msg' => $result['msg']]);
         }
 
-        return $resParams;
+        return $result;
     }
-    
-    private function apiConfig($env)
+
+    /**
+     * 微信单点登录-获取token
+     *
+     * @param String $ticketId
+     * @param String $appId
+     * @return void
+     */
+    public function ssoToken(String $ticketId, String $appId)
     {
-        $config = [
-            'test' => [
-                'ZLB_PERSONAL_TICKET_URL' => 'https://ibcdsg.zj.gov.cn:8443/restapi/prod/IC33000020220228000002/sso/servlet/simpleauth',
-                'ZLB_PERSONAL_USER_URL' => 'https://ibcdsg.zj.gov.cn:8443/restapi/prod/IC33000020220228000004/sso/servlet/simpleauth',
-                'ZLB_LEGAL_USER_URL' => 'https://ibcdsg.zj.gov.cn:8443/restapi/prod/IC33000020220309000001/rest/user/query',
-            ],
+        $this->setSSOKey();
+        $headers = $this->client->getHeaders($this->ssoTokenUrl);
+        $result = $this->client->curl($this->ssoTokenUrl, $headers, [
+            'json' => ['ticketId' => $ticketId, 'appId' => $appId],
+        ]);
 
-            'live' => [
-                'ZLB_PERSONAL_TICKET_URL' => 'https://bcdsg.zj.gov.cn:8443/restapi/prod/IC33000020220228000002/sso/servlet/simpleauth',
-                'ZLB_PERSONAL_USER_URL' => 'https://bcdsg.zj.gov.cn:8443/restapi/prod/IC33000020220228000004/sso/servlet/simpleauth',
-                'ZLB_LEGAL_USER_URL' => 'https://bcdsg.zj.gov.cn:8443/restapi/prod/IC33000020220309000001/rest/user/query',
-            ],
-        ];
+        if (!$result['success']) {
+            throw new ApiException(['code' => $result['resultCode'], 'msg' => $result['errorMsg']]);
+        }
 
-        return $config[$env];
+        return $result;
+    }
+
+    /**
+     * 微信单点登录-获取用户信息
+     *
+     * @param String $token
+     * @return void
+     */
+    public function ssoInfo(String $token)
+    {
+        $this->setSSOKey();
+        $headers = $this->client->getHeaders($this->ssoUserUrl);
+        $result = $this->client->curl($this->ssoUserUrl, $headers, [
+            'json' => ['token' => $token],
+        ]);
+
+        if (!$result['success']) {
+            throw new ApiException(['code' => $result['resultCode'], 'msg' => $result['errorMsg']]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * 设置单点登录key
+     *
+     * @return void
+     */
+    private function setSSOKey()
+    {
+        if (!env('SSO_ACCESS_KEY') || !env('SSO_SECRET_KEY')) {
+            throw new ApiException(['msg' => '请配置微信单点登录开发环境参数.', 'code' => 1]);
+        }
+
+        self::$accessKey = env('SSO_ACCESS_KEY');
+        self::$secretKey = env('SSO_SECRET_KEY');
+    }
+
+    /**
+     * 返回accessKey
+     *
+     * @return String
+     */
+    public static function accessKey()
+    {
+        return self::$accessKey;
+    }
+
+    /**
+     * 返回secretKey
+     *
+     * @return String
+     */
+    public static function secretKey()
+    {
+        return self::$secretKey;
     }
 }

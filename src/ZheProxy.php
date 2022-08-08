@@ -30,7 +30,7 @@ class ZheProxy implements ZheLb, ZheNm, ImageInterface
         }
         return self::$zlbInstance->{__FUNCTION__}($token);
     }
-
+    
     public function legalInfo(String $ssotoken)
     {
         if (!isset(self::$zlbInstance)) {
@@ -77,5 +77,21 @@ class ZheProxy implements ZheLb, ZheNm, ImageInterface
             self::$imageInstance = new Image();
         }
         return self::$zlbInstance->{__FUNCTION__}($osspath);
+    }
+
+    public function ssoToken(String $ticketId, String $appId)
+    {
+        if (!isset(self::$zlbInstance)) {
+            self::$zlbInstance = new zlbService();
+        }
+        return self::$zlbInstance->{__FUNCTION__}($ticketId, $appId);
+    }
+
+    public function ssoInfo(String $token)
+    {
+        if (!isset(self::$zlbInstance)) {
+            self::$zlbInstance = new zlbService();
+        }
+        return self::$zlbInstance->{__FUNCTION__}($token);
     }
 }

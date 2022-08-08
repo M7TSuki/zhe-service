@@ -4,5 +4,5 @@ namespace ZheService\Interfaces;
 
 interface Image
 {
-    public function imageInfo(String $osspath);
+    public function imageInfo(String $ossPath);
 }
